@@ -1,4 +1,4 @@
-# Houdini HDA Documentation System
+# Houdini HDA Documentation System (暂命名)
 
 自动为 Houdini Digital Assets (HDA) 生成完整技术文档的系统，集成了 Houdini MCP 远程控制和 RAG 文档检索。
 
