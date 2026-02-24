@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "houdini": {
+      "command": "E:/dropbox/SelfProject/MCP/sandbox_test/.venv/Scripts/python.exe",
+      "args": ["-m", "houdini_mcp"],
+      "cwd": "E:/dropbox/SelfProject/MCP/sandbox_test/houdini-mcp",
+      "env": {
+        "HOUDINI_HOST": "localhost",
+        "HOUDINI_PORT": "18811",
+        "LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# config.example.yaml
+# 复制此文件为 config.yaml 并填入你的 API key
+
+# OpenAI 兼容 API 配置
+api:
+  base_url: "https://llmxapi.com/v1"  # 或使用 OpenAI 官方: https://api.openai.com/v1
+  api_key: "your-api-key-here"  # 请设置环境变量 OPENAI_API_KEY 或在此填入
+  model: "gemini-3-flash-preview"  # 或使用 gpt-4, gpt-3.5-turbo 等
+  embedding_model: "text-embedding-3-large"
+
+# 文档爬取配置
+scraper:
+  base_url: "https://www.sidefx.com/docs/houdini/"
+  max_pages: 500  # 最大爬取页面数
+  delay: 1.0  # 请求间隔(秒)
+  output_dir: "./data/raw"
+
+# 向量数据库配置
+vectordb:
+  persist_directory: "./data/chroma"
+  collection_name: "houdini_docs"
+  chunk_size: 1000  # 文本分块大小
+  chunk_overlap: 200  # 分块重叠
+
+# RAG 配置
+rag:
+  top_k: 5  # 检索top-k个相关文档
+  temperature: 0.7
+  max_tokens: 8000  # 增加到8000以避免截断

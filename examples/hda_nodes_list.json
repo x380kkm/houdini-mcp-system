@@ -1,0 +1,728 @@
+[
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1",
+    "name": "convertline1",
+    "type": "convertline",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle2",
+    "name": "attribwrangle2",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/measure1",
+    "name": "measure1",
+    "type": "measure",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/group1",
+    "name": "group1",
+    "type": "groupcreate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/polypath1",
+    "name": "polypath1",
+    "type": "polypath",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/switchif2",
+    "name": "switchif2",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/switchif1",
+    "name": "switchif1",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle1",
+    "name": "attribwrangle1",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle1/attribvop1",
+    "name": "attribvop1",
+    "type": "attribwranglecore",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/switchif3",
+    "name": "switchif3",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/remove_unused_points",
+    "name": "remove_unused_points",
+    "type": "add",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/create_polylines",
+    "name": "create_polylines",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/keep_points",
+    "name": "keep_points",
+    "type": "add",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/keep_edge_groups",
+    "name": "keep_edge_groups",
+    "type": "groupcopy",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/switchif4",
+    "name": "switchif4",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle3",
+    "name": "attribwrangle3",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle3/attribvop1",
+    "name": "attribvop1",
+    "type": "attribwranglecore",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/interpolate_primitive_attributes_and_groups",
+    "name": "interpolate_primitive_attributes_and_groups",
+    "type": "attribinterpolate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribwrangle4",
+    "name": "attribwrangle4",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/interpolate_vertex_attributes_and_groups",
+    "name": "interpolate_vertex_attributes_and_groups",
+    "type": "attribinterpolate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribdelete2",
+    "name": "attribdelete2",
+    "type": "attribdelete",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribdelete2/attribute1",
+    "name": "attribute1",
+    "type": "attribute",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribdelete2/REFERENCE",
+    "name": "REFERENCE",
+    "type": "null",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/attribdelete2/output0",
+    "name": "output0",
+    "type": "output",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/has_prim_attribs",
+    "name": "has_prim_attribs",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline1/has_vertex_attribs",
+    "name": "has_vertex_attribs",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/curve1",
+    "name": "curve1",
+    "type": "curve",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polybevel1",
+    "name": "polybevel1",
+    "type": "polybevel::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/sweep1",
+    "name": "sweep1",
+    "type": "sweep::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polybevel2",
+    "name": "polybevel2",
+    "type": "polybevel::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/grouprange1",
+    "name": "grouprange1",
+    "type": "grouprange",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/blast1",
+    "name": "blast1",
+    "type": "blast",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polyframe1",
+    "name": "polyframe1",
+    "type": "polyframe",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/tube1",
+    "name": "tube1",
+    "type": "tube",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/copytopoints1",
+    "name": "copytopoints1",
+    "type": "copytopoints::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/merge1",
+    "name": "merge1",
+    "type": "merge",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/tube2",
+    "name": "tube2",
+    "type": "tube",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/merge2",
+    "name": "merge2",
+    "type": "merge",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/copy1",
+    "name": "copy1",
+    "type": "copyxform",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/uvquickshade1",
+    "name": "uvquickshade1",
+    "type": "uvquickshade",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/sweep2",
+    "name": "sweep2",
+    "type": "sweep::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/add1",
+    "name": "add1",
+    "type": "add",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/switch1",
+    "name": "switch1",
+    "type": "switch",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/connectivity1",
+    "name": "connectivity1",
+    "type": "connectivity",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/foreach_end1",
+    "name": "foreach_end1",
+    "type": "block_end",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/foreach_begin1",
+    "name": "foreach_begin1",
+    "type": "block_begin",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/output0",
+    "name": "output0",
+    "type": "output",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribcreate1",
+    "name": "attribcreate1",
+    "type": "attribcreate::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/transform1",
+    "name": "transform1",
+    "type": "xform",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/fuse1",
+    "name": "fuse1",
+    "type": "fuse::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/fuse2",
+    "name": "fuse2",
+    "type": "fuse::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2",
+    "name": "convertline2",
+    "type": "convertline",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle2",
+    "name": "attribwrangle2",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/measure1",
+    "name": "measure1",
+    "type": "measure",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/group1",
+    "name": "group1",
+    "type": "groupcreate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/polypath1",
+    "name": "polypath1",
+    "type": "polypath",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/switchif2",
+    "name": "switchif2",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/switchif1",
+    "name": "switchif1",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle1",
+    "name": "attribwrangle1",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle1/attribvop1",
+    "name": "attribvop1",
+    "type": "attribwranglecore",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/switchif3",
+    "name": "switchif3",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/remove_unused_points",
+    "name": "remove_unused_points",
+    "type": "add",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/create_polylines",
+    "name": "create_polylines",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/keep_points",
+    "name": "keep_points",
+    "type": "add",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/keep_edge_groups",
+    "name": "keep_edge_groups",
+    "type": "groupcopy",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/switchif4",
+    "name": "switchif4",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle3",
+    "name": "attribwrangle3",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle3/attribvop1",
+    "name": "attribvop1",
+    "type": "attribwranglecore",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/interpolate_primitive_attributes_and_groups",
+    "name": "interpolate_primitive_attributes_and_groups",
+    "type": "attribinterpolate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribwrangle4",
+    "name": "attribwrangle4",
+    "type": "attribwrangle",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/interpolate_vertex_attributes_and_groups",
+    "name": "interpolate_vertex_attributes_and_groups",
+    "type": "attribinterpolate",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribdelete2",
+    "name": "attribdelete2",
+    "type": "attribdelete",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribdelete2/attribute1",
+    "name": "attribute1",
+    "type": "attribute",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribdelete2/REFERENCE",
+    "name": "REFERENCE",
+    "type": "null",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/attribdelete2/output0",
+    "name": "output0",
+    "type": "output",
+    "depth": 2
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/has_prim_attribs",
+    "name": "has_prim_attribs",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/convertline2/has_vertex_attribs",
+    "name": "has_vertex_attribs",
+    "type": "switchif",
+    "depth": 1
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polybevel3",
+    "name": "polybevel3",
+    "type": "polybevel::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/grouprange2",
+    "name": "grouprange2",
+    "type": "grouprange",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/blast2",
+    "name": "blast2",
+    "type": "blast",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/resample1",
+    "name": "resample1",
+    "type": "resample",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polyframe2",
+    "name": "polyframe2",
+    "type": "polyframe",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribtransfer1",
+    "name": "attribtransfer1",
+    "type": "attribtransfer",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/normal1",
+    "name": "normal1",
+    "type": "normal",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/resample2",
+    "name": "resample2",
+    "type": "resample",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/sweep3",
+    "name": "sweep3",
+    "type": "sweep::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/copytopoints2",
+    "name": "copytopoints2",
+    "type": "copytopoints::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polyframe3",
+    "name": "polyframe3",
+    "type": "polyframe",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribcreate2",
+    "name": "attribcreate2",
+    "type": "attribcreate::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/merge3",
+    "name": "merge3",
+    "type": "merge",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/switch2",
+    "name": "switch2",
+    "type": "switch",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/resample3",
+    "name": "resample3",
+    "type": "resample",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/resample4",
+    "name": "resample4",
+    "type": "resample",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/merge4",
+    "name": "merge4",
+    "type": "merge",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/blendshapes1",
+    "name": "blendshapes1",
+    "type": "blendshapes::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/connectivity2",
+    "name": "connectivity2",
+    "type": "connectivity",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/foreach_end2",
+    "name": "foreach_end2",
+    "type": "block_end",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/foreach_begin2",
+    "name": "foreach_begin2",
+    "type": "block_begin",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/foreach_begin2_metadata1",
+    "name": "foreach_begin2_metadata1",
+    "type": "block_begin",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/mountain1",
+    "name": "mountain1",
+    "type": "mountain::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/smooth1",
+    "name": "smooth1",
+    "type": "smooth::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/orientalongcurve1",
+    "name": "orientalongcurve1",
+    "type": "orientalongcurve",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/facet1",
+    "name": "facet1",
+    "type": "facet",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/sweep4",
+    "name": "sweep4",
+    "type": "sweep::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polyframe4",
+    "name": "polyframe4",
+    "type": "polyframe",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/create_rest_position1",
+    "name": "create_rest_position1",
+    "type": "attribwrangle",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/detangle1",
+    "name": "detangle1",
+    "type": "detangle",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/switch3",
+    "name": "switch3",
+    "type": "switch",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/smooth2",
+    "name": "smooth2",
+    "type": "smooth::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribwrangle1",
+    "name": "attribwrangle1",
+    "type": "attribwrangle",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribpromote1",
+    "name": "attribpromote1",
+    "type": "attribpromote",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/uvflatten1",
+    "name": "uvflatten1",
+    "type": "uvflatten::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/uvflatten2",
+    "name": "uvflatten2",
+    "type": "uvflatten::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/uvlayout1",
+    "name": "uvlayout1",
+    "type": "uvlayout::3.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/normal2",
+    "name": "normal2",
+    "type": "normal",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribcreate3",
+    "name": "attribcreate3",
+    "type": "attribcreate::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/polyframe5",
+    "name": "polyframe5",
+    "type": "polyframe",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/switch4",
+    "name": "switch4",
+    "type": "switch",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribcreate4",
+    "name": "attribcreate4",
+    "type": "attribcreate::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/attribcreate5",
+    "name": "attribcreate5",
+    "type": "attribcreate::2.0",
+    "depth": 0
+  },
+  {
+    "path": "/obj/geo1/GameJam_pipe1/switch5",
+    "name": "switch5",
+    "type": "switch",
+    "depth": 0
+  }
+]

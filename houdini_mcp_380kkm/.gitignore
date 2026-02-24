@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# 配置文件 (包含敏感信息)
+config.yaml
+*.log
+
+# 临时文件
+test_images/
+evaluation_history/
+temp/
+
+# 归档数据 (可选择性提交)
+archives/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

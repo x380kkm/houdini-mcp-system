@@ -1,0 +1,71 @@
+# .gitignore
+
+# API Keys and Secrets
+config.yaml
+*.key
+*.pem
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data and Cache
+data/
+*.db
+*.sqlite
+*.log
+
+# Archives
+.archive/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Houdini
+*.hip
+*.hipnc
+*.hiplc
+*.hda
+*.hdanc
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+
+# Test outputs
+hda_docs/
+test_*.py
+*_test.py

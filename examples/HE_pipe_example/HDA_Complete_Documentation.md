@@ -1,0 +1,1187 @@
+# HDA 完整文档
+
+**生成时间**: 2026-02-24 22:46:47
+
+---
+
+## 📋 目录
+
+1. [概览](#概览)
+2. [节点结构](#节点结构)
+3. [节点类型说明](#节点类型说明)
+4. [完整节点列表](#完整节点列表)
+
+---
+
+## 📊 概览
+
+- **总节点数**: 121
+- **节点类型数**: 44
+- **最大嵌套深度**: 2
+
+### 节点类型统计
+
+| 节点类型 | 数量 |
+|---------|------|
+| `attribwrangle` | 12 |
+| `switchif` | 12 |
+| `add` | 5 |
+| `polyframe` | 5 |
+| `switch` | 5 |
+| `attribcreate::2.0` | 5 |
+| `attribwranglecore` | 4 |
+| `attribinterpolate` | 4 |
+| `sweep::2.0` | 4 |
+| `merge` | 4 |
+| `resample` | 4 |
+| `output` | 3 |
+| `polybevel::3.0` | 3 |
+| `block_begin` | 3 |
+| `convertline` | 2 |
+| `measure` | 2 |
+| `groupcreate` | 2 |
+| `polypath` | 2 |
+| `groupcopy` | 2 |
+| `attribdelete` | 2 |
+
+*还有 24 种其他节点类型...*
+
+---
+
+## 🌳 节点结构
+
+HDA 内部节点的层级结构：
+
+```
+深度 0: 71 个节点
+- convertline1 (convertline)
+- curve1 (curve)
+- polybevel1 (polybevel::3.0)
+- sweep1 (sweep::2.0)
+- polybevel2 (polybevel::3.0)
+  ... 还有 66 个节点
+深度 1: 40 个节点
+  - attribwrangle2 (attribwrangle)
+  - measure1 (measure)
+  - group1 (groupcreate)
+  - polypath1 (polypath)
+  - switchif2 (switchif)
+    ... 还有 35 个节点
+深度 2: 10 个节点
+    - attribvop1 (attribwranglecore)
+    - attribvop1 (attribwranglecore)
+    - attribute1 (attribute)
+    - REFERENCE (null)
+    - output0 (output)
+      ... 还有 5 个节点
+```
+
+---
+
+## 📚 节点类型说明
+
+以下是 HDA 中使用的所有节点类型的详细说明（按使用频率排序）：
+
+### 1. attribwrangle
+
+**使用次数**: 12 个实例
+
+**功能说明**:
+
+根据您提供的文档，Houdini中的 **Attribute Wrangle** 节点的详细定义、功能及主要参数如下：
+
+### 1. 什么是 Attribute Wrangle 节点？
+**Attribute Wrangle (SOP)** 是一个极其通用且强大的节点，它允许用户通过编写 **VEX 脚本（VEX snippets）** 来直接创建或修改几何体的属性（如点属性）。
+
+*   **核心定位**：它是一个低层级（low-level）的工具，为熟悉脚本语言的专家提供灵活的属性操作手段。
+*   **工作方式**：它在内部运行 VEX 代码，比传统的节点组合更高效，是处理复杂逻辑和自定义属性的首选方法。
+
+---
+
+### 2. 它的主要功能是什么？
+*   **属性操作**：创建新属性或修改现有属性的值（如颜色 `Cd`、速度 `v`、位置 `P` 等）。
+*   **数值映射与随机化**：可以利用 VEX 内置函数（如 `rand()` 随机函数、`fit()` 重映射函数）进行复杂的数学运算。
+*   **访问几何数据**：使用 `@属性名` 语法（如 `@ptnum` 代表点编号）直接访问和操作几何体信息。
+*   **KineFX 角色处理**：其变体 **Rig Attribute Wrangle** 专门用于处理 KineFX 骨架，能够重新计算点变换（Transform）并修改骨骼属性。
+
+---
+
+### 3. 主要参数说明
+
+根据文档，该节点的核心参数包括：
+
+#### **基础参数 (Standard Wrangle)**
+*   **Point Group (点组)**：
+    *   指定输入几何体中需要运行 VEX 程序的点子集。
+    *   如果留空，程序将对所有点生效。
+*   **VEXpression (VEX 表达式/代码片段)**：
+    *   这是编写 VEX 代码的核心区域。
+    *   用户可以使用 `@variable_name` 语法访问属性。
+    *   可以使用 `ch()` 函数来引用和计算节点上的参数。
+*   **Attributes to Create (创建属性列表 / exportlist)**：
+    *   用于限制哪些新属性允许被创建。
+    *   默认模式为 `*`（允许创建任何属性）。
+    *   全局属性（如 `Cd`, `v`, `id`）无论是否在列表中都会被创建。
+
+#### **Rig 变体特有参数 (Rig Attribute Wrangle)**
+*   **Group Type (组类型)**：定义组所包含的元素类型。
+*   **Attributes to Transform (转换属性)**：
+    *   匹配此模式的点和顶点属性将根据其“类型信息（Type Info）”进行变换。
+    *   向量（Vector）和法线（Normal）会根据变换进行不同的运算，而标记为 point 或 hpoint 的属性则不会被变换。
+*   **Rig Tab (Rig 选项卡)**：暴露自定义视口状态和参数，用于自动重新计算输入和输出的点变换。
+
+---
+
+### 4. 使用示例（基于文档）
+要在 barbs（羽支）上生成随机长度，可以在 VEXpression 中输入：
+```vex
+@length = fit(rand(@ptnum), 0, 1, 0.5, 1.1);
+```
+该脚本通过点编号 `@ptnum` 生成 0 到 1 之间的随机数，并将其映射到 0.5 到 1.1 的范围内赋值给 `@length` 属性。
+
+**参考文档**:
+- [Copy: Copytopoints](local://copy/copytopoints.txt)
+- [Nodes: Pointwrangle](local://nodes/sop\pointwrangle.txt)
+- [Feathers: Attributes](local://feathers/attributes.txt)
+
+---
+
+### 2. switchif
+
+**使用次数**: 12 个实例
+
+**功能说明**:
+
+根据您提供的文档，**Switch-If** 节点是 Houdini 中的一个 SOP 层级（几何体网络）节点。以下是关于该节点的详细介绍、功能及主要参数说明：
+
+### 1. 什么是 Switch-If 节点？
+**Switch-If** 节点（内部名称：`switchif`）于 Houdini 18.0 版本引入。它是一个逻辑切换节点，用于根据特定条件在两个输入分支（第一输入或第二输入）之间进行切换。
+
+### 2. 它的主要功能是什么？
+*   **分支切换**：它决定将哪一个上游分支的几何体传递到下游。
+*   **多维测试**：与传统的 Switch SOP（仅依赖索引数值）不同，Switch-If 可以直接根据**几何体的属性或状态**进行测试。
+*   **逻辑组合**：它支持组合多个测试条件，利用“与”（AND）或“或”（OR）逻辑来决定最终的切换结果。
+*   **整体操作**：该节点会将其中一个输入分支**完整地**传递下去，它**不属于**点级别或面级别的修改器（即不是针对单个点或面做切换，而是针对整个几何体流）。
+
+### 3. 主要参数与测试类型
+根据文档描述，其核心控制逻辑如下：
+
+*   **Test Type（测试类型）**：
+    这是该节点的核心参数。它允许用户选择不同的测试方案来检查输入几何体。虽然文档中未列出所有细节，但明确指出可以测试“输入几何体的某些方面”。
+*   **逻辑控制（Logic）**：
+    *   **All conditions true (AND)**：所有设定的条件都必须满足时，才切换输入。
+    *   **Any conditions true (OR)**：只要满足其中任何一个条件，就执行切换。
+*   **Expression（表达式）**：
+    如果仅使用单一的表达式测试，其功能等同于标准的 Switch SOP。
+
+### 4. 与普通 Switch 节点的区别
+| 特性 | Switch SOP | Switch-If SOP |
+| :--- | :--- | :--- |
+| **切换依据** | 依赖手动输入或 Python/HScript 表达式计算出的索引值。 | 既支持表达式，也支持直接内置的几何体状态测试。 |
+| **逻辑复杂度** | 通常需要复杂的 Python 脚本来检查几何体（如检查是否有报错、是否有数据）。 | 内置了逻辑门（AND/OR），可以更直观地组合多个测试条件。 |
+| **易用性** | 检查几何体是否为空或报错时需要编写特定代码。 | 专门设计用于处理“如果输入未连接”或“几何体满足某条件”等场景。 |
+
+### 5. 使用示例与注意事项
+*   **典型应用场景**：如果一个数字资产（HDA）的输入端没有连接任何东西，可以使用 Switch-If 自动切换到“默认几何体”分支。
+*   **重要提示**：
+    *   该节点在 SOP 环境下工作。
+    *   它在切换时是“二选一”的（第一输入或第二输入）。
+    *   它不会改变几何体内部的结构，只是作为一个流控制开关。
+
+### 6. 补充：文档中提到的 Python 替代方案
+文档还提到，在没有使用 Switch-If 的情况下，用户常在普通 **Switch 节点**的 `Select Input` 参数中使用以下 Python 表达式来实现类似“容错切换”的功能：
+```python
+# 检查第二个输入是否有几何体且是否有顶点，否则切换到第一个输入
+geo = hou.pwd().inputs()[1].geometry() 
+1 if geo and geo.point(0) else 0
+```
+而 **Switch-If** 节点的出现，正是为了将这类常见的几何体检测逻辑参数化、内置化，从而减少对复杂脚本的依赖。
+
+**参考文档**:
+- [Network: Organize](local://network/organize.txt)
+- [Nodes: Switch](local://nodes/sop\switch.txt)
+- [Nodes: Switchif](local://nodes/sop\switchif.txt)
+
+---
+
+### 3. add
+
+**使用次数**: 5 个实例
+
+**功能说明**:
+
+根据您提供的文档内容，Houdini 的核心在于**节点（Nodes）**、**参数（Parameters）**以及**程序化工作流**。虽然您提供的文档片段主要介绍了 Houdini 的总体概念、几何体类型（Primitives/Points）和节点系统，但未详细列出“Add node”的具体说明书。
+
+作为 Houdini 专家助手，我将结合文档中提到的**程序化逻辑**和**几何体结构（点与原形）**，为您详细解答 Add 节点的功能及其主要参数：
+
+### 1. 什么是 Add 节点？
+在 Houdini 的节点体系中，**Add 节点**属于 **SOP（Surface Operator，表面算子）** 类型。它是最基础的几何体创建工具之一，主要用于通过手动定义坐标或利用现有数据来生成**点（Points）**和**原形（Primitives，如多边形线或面）**。
+
+这完美契合文档中提到的“程序化工作流”：你可以通过 Add 节点手动创建一个点，再通过后续节点对其进行移动或变形。
+
+---
+
+### 2. Add 节点的主要功能
+根据文档对几何体组件（Points 和 Primitives）的定义，Add 节点的功能分为两大核心部分：
+
+*   **创建点（Point Creation）：** 允许用户通过输入精确的 X, Y, Z 坐标来创建空间中的孤立点。
+*   **构建几何原形（Polygon/Line Construction）：** 它可以将场景中已有的点（或它自己创建的点）连接起来，形成多边形（Polygon）或线段（Polygonal Curve）。
+
+---
+
+### 3. 主要参数详解
+Add 节点的参数编辑器（Parameter Editor）主要分为以下两个核心标签页：
+
+#### A. Points 标签页（用于创建点）
+*   **Number of Points（点的数量）：** 点击 "+" 号可以增加条目。
+*   **Point List（点列表）：**
+    *   **P (Position)：** 设置每个点的具体空间坐标（X, Y, Z）。
+    *   **Weight（权重）：** 用于某些特定几何体计算的权重值。
+*   **Keep Points（保留点）：** 当节点有输入连接时，决定是保留输入点还是仅使用该节点新创建的点。
+
+#### B. Polygons 标签页（用于连接点生成线/面）
+此部分决定了如何将点组合成文档中提到的“Primitive”：
+*   **By Group（按组连接）：** 允许用户指定特定的点组来生成多边形。
+*   **All Points（所有点）：** 将所有点按编号顺序连接成一条线。
+*   **By Attribute（按属性连接）：** 根据特定的点属性（如 `id` 或 `name`）来分组连接点，这在处理复杂程序化建模时非常有用。
+*   **Closed（闭合）：** 勾选后，会将最后一个点与第一个点相连，形成闭合的环或面。
+*   **Remove Unused Points（移除未使用的点）：** 勾选后，如果某些点没有被包含在任何多边形中，它们将被删除。
+
+---
+
+### 4. 总结
+Add 节点是实现文档所述“**程序化建模**”的起点。它通常用于：
+1.  **初始化：** 手动放置几个关键控制点。
+2.  **连线：** 将散乱的点云转换为可渲染的线框或面。
+3.  **清理：** 配合其他节点（如文档中提到的 Extrude 或 Subdivide）之前，先用 Add 节点提取或重新构建基础几何结构。
+
+如果您需要了解如何将 Add 节点与其他节点（如文档提到的 Box 或 Subdivide 节点）配合使用，请随时提问。
+
+**参考文档**:
+- [Basics: Intro](local://basics/intro.txt)
+- [Basics: Intro](local://basics/intro.txt)
+- [Nodes: Index](local://nodes/index.txt)
+
+---
+
+### 4. polyframe
+
+**使用次数**: 5 个实例
+
+**功能说明**:
+
+Based on the provided documentation, here is a detailed explanation of the **PolyFrame** node in Houdini:
+
+### **What is the PolyFrame Node?**
+The PolyFrame node is a Surface Operator (SOP) used to generate **coordinate frame attributes** for points and vertices. These frames are essential for defining local orientations on a geometry's surface, which are often used in shading, instance alignment, or further geometric transformations.
+
+---
+
+### **What Does It Do?**
+The primary function of the PolyFrame node is to compute and assign three specific vector attributes:
+1.  **Normal ($N$):** The direction perpendicular to the surface.
+2.  **Tangent:** A vector tangent to the surface.
+3.  **Bitangent:** A vector perpendicular to both the normal and the tangent (though not always orthogonal by default).
+
+**Key Functional Details:**
+*   **Attribute Placement:** It can create these attributes at either the **Point** or **Vertex** level.
+*   **Normalization:** All computed vectors are automatically normalized (set to a length of 1).
+*   **Orthogonality:** By default, the computed vectors are not necessarily orthogonal (perpendicular to each other). However, the node provides an option to force them to be orthogonal.
+*   **Style-Based Computation:** Frames are calculated based on a user-selected "frame-style." For example, the **Texture UV Gradient** style uses existing texture coordinates (UVs) to determine the direction of the tangent and bitangent vectors.
+*   **Advanced Usage:** It can be used to generate smoothly varying frames across surface faces, align frames with curvature directions, or follow boundary curves.
+
+---
+
+### **Main Parameters**
+Based on the documentation, the key parameters and controls for the PolyFrame node include:
+
+*   **Group:** 
+    Allows you to specify a subset of the source geometry (points or primitives) for which the frame attributes should be computed.
+*   **Frame Style:** 
+    Determines the method used to calculate the frame. A notable style mentioned is **Texture UV Gradient**, which requires pre-existing point or vertex texture attributes.
+*   **Make Frame Orthogonal (Checkbox):** 
+    When enabled, this ensures that the resulting normal, tangent, and bitangent vectors are perpendicular to one another.
+*   **Tangent / Bitangent Output Toggles:** 
+    Users can choose to enable or disable the output of the tangent and/or bitangent vectors if only specific attributes are needed.
+*   **Attribute Names (Implicit):** 
+    While the UI allows customization, the node typically outputs these as standard vector attributes (often named `tangent` and `bitangent` or `tangentu` and `tangentv`).
+
+---
+
+### **Summary Table**
+| Feature | Description |
+| :--- | :--- |
+| **Context** | SOP (Surface Operator) |
+| **Primary Output** | Normal, Tangent, and Bitangent attributes |
+| **Entity Type** | Points or Vertices |
+| **Requirement** | Texture UV Gradient style requires UV attributes |
+| **Optimization** | Vectors are normalized; Orthogonality is optional |
+
+**参考文档**:
+- [Nodes: Polyframe](local://nodes/sop\polyframe.txt)
+- [Nodes: Tangentfield](local://nodes/sop\tangentfield.txt)
+- [Basics: Intro](local://basics/intro.txt)
+
+---
+
+### 5. switch
+
+**使用次数**: 5 个实例
+
+**功能说明**:
+
+在Houdini中，**Switch（切换）节点**是一个基础且核心的工具，用于控制网络中数据的流向。它允许用户根据特定条件或手动设置，在多个上游输入分支中选择其中一个进行计算（Cook）并输出。
+
+根据您提供的文档，以下是关于 Switch 节点的详细介绍、功能及其主要参数：
+
+### 1. 什么是 Switch 节点？
+Switch 节点是一个路由工具。在 Houdini 的大多数网络类型（如 SOP 几何网络、DOP 动力学网络、VOP 材质/计算网络等）中都存在。它的核心作用是**从多个输入中选择一个，并将其传递到输出端**。
+
+### 2. 主要功能与用途
+
+*   **分支切换：** 在不同的建模路径、材质方案或模拟设置之间快速切换。
+*   **逻辑控制：** 配合表达式（Expression）实现自动化切换。例如，根据帧号、属性值或外部控制参数来决定使用哪个分支。
+*   **错误处理（Error Handling）：** 文档中提到了一个高级用法，即通过 Python 表达式检测输入端是否有有效几何体，如果某个分支报错或为空，则自动切换到备份分支。
+*   **动力学控制（DOPs）：**
+    *   **对象切换：** 在模拟过程中途更换被模拟的对象。
+    *   **数据切换：** 根据每个对象的信息或随机值，为不同对象分配不同的数据。
+    *   **解算器选择：** 配合 `Switch Value` 和 `Switch Solver`，决定每个对象使用哪个子解算器。
+*   **VOP 逻辑：** 在着色器或 VEX 网络中，根据比较结果（如 Compare 节点）选择不同的数值或颜色输入。
+
+### 3. 主要参数
+
+虽然不同上下文（Context）下的 Switch 节点参数名称略有差异，但其逻辑一致：
+
+*   **Select Input / Switcher Index（选择输入/切换索引）：**
+    *   **类型：** 整数（Integer）。
+    *   **功能：** 决定哪一个输入端口的数据被传递到输出。
+    *   **索引规则：** 采用从 **0** 开始的索引。即：
+        *   `0` 对应第一个输入（通常标注为 input1）。
+        *   `1` 对应第二个输入（通常标注为 input2）。
+        *   以此类推。
+    *   **控制方式：** 可以手动输入数值，也可以关联通道（Relative Reference），或者编写 Python/HScript 表达式。
+
+*   **Inputs（输入端）：**
+    *   大部分 Switch 节点支持多个输入。
+    *   **VOP 环境下：** 最多支持 64 个输入。
+    *   **DOP 环境下：** 要求所有连接到该节点的输入必须类型一致（要么全是“对象 Objects”，要么全是“数据 Data”，不能混用）。
+
+### 4. 高级用法技巧
+
+*   **动态错误检测（Python）：**
+    可以使用以下代码在 Switch 节点中实现“如果输入1有几何体则用输入1，否则用输入0”：
+    ```python
+    geo = hou.pwd().inputs()[1].geometry() 
+    1 if geo and geo.point(0) else 0
+    ```
+*   **性能警告：**
+    在某些情况下（非输出节点或 Collect 节点之间），Switch 节点可能会导致**所有输入分支都被计算（Cook）**，这在分支非常复杂时会降低效率。文档建议对于大型网络块，使用 **If subnetwork** 来实现更高效的条件切换。
+
+### 5. 相关工具补充
+*   **Bypass Flag（忽略标志）：** 另一种关闭节点效果的方法，使数据直接穿过该节点而不做修改。
+*   **Switch Value DOP：** 专门用于为对象创建索引数据，以便 `Switch Solver` 识别并调用相应的子解算器。
+
+**参考文档**:
+- [Network: Organize](local://network/organize.txt)
+- [Nodes: Switch](local://nodes/dop\switch.txt)
+- [Nodes: Switch](local://nodes/sop\switch.txt)
+
+---
+
+### 6. attribcreate::2.0
+
+**使用次数**: 5 个实例
+
+**功能说明**:
+
+根据您提供的文档以及Houdini的相关技术规范，以下是关于 **`attribcreate::2.0`**（即 **Attribute Create** 节点）的详细介绍、功能说明及主要参数解析：
+
+### 1. 什么是 `attribcreate::2.0`？
+`attribcreate::2.0` 是 Houdini 中的 **Attribute Create** SOP（表面节点）的内部注册名称及版本号。它是 Houdini 中最基础且最常用的节点之一，主要用于在几何体（Geometry）上手动创建新的属性或修改已有的属性。
+
+### 2. 主要功能
+根据文档描述，该节点的核心功能包括：
+*   **属性创建与修改**：可以在不同的几何体级别（如 Point, Vertex, Primitive, Detail）上生成新的数据存储字段。
+*   **手动数值设置**：允许用户直接在参数面板输入数值，而不需要编写 VEX 代码（与 `attribwrangle` 相对）。
+*   **元数据定义**：除了存储数值，它还负责定义属性的物理意义（如颜色、法线、位置等），以便后续节点正确处理。
+
+---
+
+### 3. 主要参数详解
+
+根据文档内容，该节点的主要参数可分为以下几类：
+
+#### A. 属性身份与定位 (Attribute Identity)
+*   **Attribute Name (属性名称)**：
+    *   定义属性的字符串标识符。例如输入 `Cd` 会创建扩散颜色属性，输入 `width` 会创建宽度属性。
+*   **Group (组)**：
+    *   （虽然文档摘要未详述，但通常包含此项）用于指定该属性仅应用于几何体的特定子集。
+
+#### B. 数据类型与语义 (Data Type & Semantics)
+*   **Attribute Type (属性类型)**：
+    *   决定存储的数据格式（如 Float, Integer, Vector, String）。
+    *   **注意**：文档强调 **Vector** 类型与三个独立的 Float 不同，因为它通常会随几何体变换（如法线变换）而自动调整。
+*   **Type Info (类型信息)**：
+    *   为通用属性提供语义提示。例如，将向量标记为“Normal（法线）”时，节点会知道在缩放几何体时不应移动它，而标记为“Position（位置）”时则需要随之平移。
+
+#### C. HScript 与变量集成 (Variable Mapping)
+*   **Create Variable Mapping (创建变量映射)**：
+    *   勾选此项可为该属性创建一个局部变量（Local Variable）。
+*   **Local Variable (局部变量名)**：
+    *   定义在 HScript 表达式中引用的名称（例如 `$MYATTR`）。如果留空，Houdini 默认使用属性名的大写形式。
+
+#### D. 性能与高级设置 (Advanced Settings)
+*   **Compute Results In Place (原位计算)**：
+    *   当在编译块（Compiled Block）中使用时，Attribute VOP 能够直接在输入几何体上操作而不制作副本，从而减少内存开销并提高处理速度。
+*   **Output Selection Group (输出选择组)**：
+    *   定义一个组名用于输出选择。当节点的“高亮标志（Highlight Flag）”开启时，该组可被后续建模工具直接识别使用。
+
+---
+
+### 4. 与相关节点的区别
+文档中提到了几个相关的节点，帮助理解 `attribcreate` 的定位：
+*   **`attribwrangle`**：使用 VEX 脚本进行更复杂的逻辑运算和属性创建，效率更高但需要编程。
+*   **`attribcopy` / `attribtransfer`**：用于从其他几何体复制或传递现有属性，而非从零创建。
+*   **`attribpromote`**：用于改变属性的级别（例如将 Point 属性提升为 Primitive 属性）。
+
+### 总结
+`attribcreate::2.0` 是一个功能强大且直观的工具，适合在不涉及复杂逻辑的情况下，通过 UI 面板快速定义几何体属性的**名称、类型、默认值及 HScript 变量映射**。
+
+**参考文档**:
+- [Copy: Copytopoints](local://copy/copytopoints.txt)
+- [Nodes: Attribute](local://nodes/sop\attribute.txt)
+- [Nodes: Attribfromvolume](local://nodes/sop\attribfromvolume.txt)
+
+---
+
+### 7. attribwranglecore
+
+**使用次数**: 4 个实例
+
+**功能说明**:
+
+根据您提供的文档，**Attribute Wrangle Core** 是 Houdini 中的一个 SOP 节点，以下是关于它的详细介绍、功能及主要参数：
+
+### 1. 什么是 Attribute Wrangle Core？
+`attribwranglecore` 是 **Attribute VOP SOP** 的一个精简版本，它只保留了 **Snippet（代码片段）** 功能。
+
+*   **内部性质**：该节点主要用于 Houdini 内部，作为标准 **Attribute Wrangle SOP** 的底层实现基础。
+*   **结构特点**：与普通的 Attribute VOP 不同，它不包含子级 VOP 网络（Child VOP network）。
+
+### 2. 它的作用是什么？
+*   **执行 VEX 代码**：它允许用户通过编写 VEX 脚本来直接操纵几何体的点属性。
+*   **简化文件加载**：由于它不包含复杂的子级 VOP 网络节点结构，使用它可以简化 Houdini 文件的加载过程。
+*   **性能说明**：文档明确指出，使用此节点相比于普通的 Attribute Wrangle **并没有性能上的提升**。它的存在主要是为了优化内部架构和文件存储。
+
+### 3. 主要参数详解
+
+根据文档，该节点包含以下核心参数：
+
+*   **Point Group (点组)**:
+    *   指定输入几何体中需要运行 VEX 程序的点子集。
+    *   如果留空，程序将作用于输入几何体的所有点。
+
+*   **VEXpression (VEX 表达式 / Snippet)**:
+    *   这是编写 VEX 代码的核心区域。
+    *   用户可以使用 `@variable_name` 语法来访问或修改几何体属性（例如 `@P` 访问位置，`@Cd` 访问颜色）。
+
+*   **Attributes to Create (要创建的属性 / Export List)**:
+    *   用于控制哪些新属性会被创建。
+    *   **匹配模式**：默认值为 `*`，允许创建任何属性。
+    *   **限制范围**：可以通过将 `*` 替换为特定的名称列表来限制允许创建的属性。
+    *   **例外情况**：全局属性（如 `Cd`、`v` 和 `id`）即使不在列表中，也会被正常创建。
+
+### 4. 相关节点
+*   **Attribute Wrangle**: 用户平时最常使用的标准节点，其内部使用了 core 节点的逻辑。
+*   **Attribute VOP**: 提供可视化连线界面来处理属性。
+*   **Rig Attribute Wrangle**: 专门用于 KineFX 骨架系统的 Wrangle 变体，增加了 Rig 选项卡用于处理变换属性。
+
+**参考文档**:
+- [Nodes: Attribwranglecore](local://nodes/sop\attribwranglecore.txt)
+- [Nodes: Pointwrangle](local://nodes/sop\pointwrangle.txt)
+- [Nodes: Kinefx--Rigattribwrangle](local://nodes/sop\kinefx--rigattribwrangle.txt)
+
+---
+
+### 8. attribinterpolate
+
+**使用次数**: 4 个实例
+
+**功能说明**:
+
+根据您提供的文档，**Attribute Interpolate (attribinterpolate)** 是 Houdini 中的一个 SOP 节点。以下是关于该节点的详细介绍、功能说明及其主要参数：
+
+### 1. 什么是 Attribute Interpolate 节点？
+`Attribute Interpolate` 是一个用于在几何体之间进行属性插值的节点。它从**第二个输入（源几何体）**获取属性值，并将计算后的插值结果写入**第一个输入（目标几何体）**。
+
+### 2. 主要功能与原理
+该节点的核心作用是根据特定的空间关系或权重，精确地计算并转移属性。它主要支持以下两种插值方式：
+
+*   **基于原始几何体（Primitive）和 UVW 坐标：**
+    根据目标点所在的原始几何体编号（Primitive Number）以及在该面上的参数化位置（UVW/Barycentric coordinates）来计算插值。
+*   **基于索引与权重数组（Array Attributes）：**
+    通过一个“索引数组属性”（指定哪些源元素影响目标元素）和一个“权重数组属性”（指定每个源元素的影响比例）来进行插值。
+
+#### 常见应用场景：
+*   **保持散布点位置：** 使通过 `Scatter` 节点生成的点能够跟随变形（Deforming）的几何体移动。
+*   **投影点跟随：** 使通过 `Ray` 节点投影到变形几何体上的点保持相对位置。
+*   **毛发生成：** 在毛发工具链中，用于将引导线（Guides）的属性转移到生成的毛发（Mesh）上。
+
+---
+
+### 3. 主要参数详解
+
+根据文档，该节点的主要参数包括：
+
+#### 核心参数：
+*   **Input Blend (blend):**
+    *   指定从哪个输入获取输出几何体。
+    *   值为 `0` 表示完全来自第一个输入，值为 `1` 表示完全来自第二个输入。
+    *   支持小数（如 `0.5`）在相邻输入之间进行混合。可以通过设置关键帧或表达式来实现随时间变化的平滑过渡。
+*   **Attributes (attribs):**
+    *   指定需要进行插值的属性名称或匹配模式（Pattern）。
+    *   **注意：** 只有匹配该模式的属性会被插值。不匹配的属性将保持原值，并根据 `Input Blend` 的阈值直接切换（例如：混合值 < 1 时使用输入 0 的值，达到 1 时切换到输入 1 的值）。默认情况下插值所有属性。
+
+#### 索引与权重相关参数：
+*   **Index Attrib (indexattrib):**
+    *   存储引导元素索引列表的属性名称。目标点通过此属性知道自己引用了哪些源元素。
+*   **Weight Attrib (weightattrib):**
+    *   存储对应权重列表的属性名称。定义了每个被引用的源元素对目标点的影响程度。
+
+#### 引导属性（Guide/Hair 相关）：
+*   **Interpolate Guide Attributes (interpguideattribs):**
+    *   是否插值额外的引导属性，并将混合后的值转移到生成的网格上。
+*   **Primitive Attributes (guideprimattribs):**
+    *   指定需要从引导原始几何体转移到网格的特定属性列表。
+
+---
+
+### 4. 相关节点
+该节点通常与以下节点配合使用或具有相关性：
+*   `Scatter SOP`: 生成初始点并提供 UVW 信息。
+*   `Ray SOP`: 投影点并获取位置信息。
+*   `Weight Array Biharmonic / Weight Array Interpolate`: 用于生成插值所需的权重数组。
+*   `Hair Gen`: 在毛发生成流程中应用此插值逻辑。
+
+**参考文档**:
+- [Nodes: Attribinterpolate](local://nodes/sop\attribinterpolate.txt)
+- [Nodes: Guideinterpolationmesh](local://nodes/sop\guideinterpolationmesh.txt)
+- [Nodes: Sblend](local://nodes/sop\sblend.txt)
+
+---
+
+### 9. sweep::2.0
+
+**使用次数**: 4 个实例
+
+**功能说明**:
+
+在Houdini中，**Sweep 2.0**（SOP节点）是一个功能极其强大且通用的程序化建模工具。它主要用于通过沿着一条“脊柱”曲线（Spine/Backbone）扫掠一个“横截面”曲线（Cross-section）来创建表面。
+
+以下是基于文档的详细介绍、功能说明及主要参数分类：
+
+### 1. 节点定义与核心功能
+*   **基本定义**：Sweep节点通过将第二个输入的横截面曲线分布到第一个输入的脊柱曲线上，并在这些分布的横截面之间生成表面，从而创建几何体。
+*   **应用场景**：它是生成管状物（Tubes）、丝带（Ribbons）、网格（Grids）以及各种程序化曲线造型的核心工具。
+*   **支持类型**：支持折线（Polylines）、NURBS曲线和贝塞尔（Bézier）曲线。
+
+### 2. 输入端说明
+*   **第一输入 (Spine/Backbone)**：定义扫掠路径的脊柱曲线。
+*   **第二输入 (Cross-section)**：定义扫掠形状的横截面。
+*   **第三输入 (Reference Point - 可选)**：如果提供参考点，横截面将朝向对应的参考点进行定向。
+
+### 3. 主要功能特性
+*   **表面类型继承**：默认情况下，输出表面的类型由输入曲线决定（例如，折线生成多边形，NURBS曲线生成NURBS表面）。
+*   **自动定向**：横截面原语会自动放置在脊柱的每个点上，并与其切线垂直。
+*   **多曲线处理**：
+    *   如果脊柱输入包含多个原语，Sweep会沿着每一条曲线进行扫掠。
+    *   如果横截面输入包含多个原语，可以使用 **Cycle type（循环类型）** 参数来控制它们的分布方式。
+
+### 4. 关键参数与设置
+基于文档内容，Sweep 2.0 的核心参数分布在以下几个方面：
+
+#### **A. 构造与类型 (Construction)**
+*   **Primitive Type (原语类型)**：允许用户强制覆盖默认的表面类型（例如将NURBS输入强制输出为Polygon）。
+
+#### **B. 拓扑与排序 (Topology)**
+*   **Swap Rows and Columns (交换行与列)**：
+    *   **功能**：调整生成表面中点和原语的存储顺序，从默认的“行优先”（Row-major）改为“列优先”（Column-major）。
+    *   **注意**：开启此项通常会反转法线，因此建议配合“Reverse Cross Sections”使用以保持正确的法线方向。
+*   **Reverse Cross Sections (反转横截面)**：用于纠正法线方向。
+
+#### **C. 隐式行为 (Implicit Behavior)**
+*   **Close Implicit Backbone Curve if No Curve Input**：
+    *   当第一输入为空时，节点会假设所有横截面位于原点，并形成一条隐式曲线。
+    *   开启此项会将该隐式曲线闭合，使横截面形成一个环状回路，而非直线排列。
+
+#### **D. 循环控制 (Cycling)**
+*   **Cycle Type**：当提供多个横截面时，决定如何在脊柱点上循环或分配这些截面。
+
+### 5. 特殊扫掠模式
+*   **双线性放样 (Bilinear Skin)**：当进行特定设置时，Sweep可以执行双线性放样。如果两个输入的端点重合，生成的表面边界将与输入曲线精确匹配。
+*   **三角形表面 (Triangular Surface)**：支持生成三角形拓扑的特殊表面构造。
+
+### 总结
+**Sweep 2.0** 是一个高度灵活的节点，相比旧版本（1.0），它在处理复杂曲线、法线定向和拓扑结构方面更加智能和直观。它是构建管状工业结构、植物枝干或任何基于路径的几何体的首选工具。
+
+**参考文档**:
+- [Nodes: Sweep](local://nodes/sop\sweep.txt)
+- [Shelf: Rails](local://shelf/rails.txt)
+- [Nodes: Sweep](local://nodes/sop\sweep.txt)
+
+---
+
+### 10. merge
+
+**使用次数**: 4 个实例
+
+**功能说明**:
+
+在Houdini中，“Merge”节点并不是单一的一个节点，而是根据所处的网络上下文（Context）有不同的变体。根据您提供的文档，最主要的两种Merge节点是 **Merge DOP**（动力学上下文）和 **Object Merge SOP**（几何体表面上下文）。
+
+以下是基于文档的详细说明：
+
+### 1. Merge DOP (Dynamics Context)
+**Merge DOP** 用于在动力学模拟中合并多个对象或数据流。
+
+*   **主要功能：**
+    *   将多个独立的对象流或数据流合并为单一流。
+    *   **限制条件：** 不能在同一个Merge节点中混合合并“对象”和“数据”。所有输入必须全是对象流，或者全是数据流。
+    *   **关系处理：** 合并对象本身并不意味着它们之间产生了物理联系。但为了方便，可以通过参数开启 **Affector Relationship（影响关系）**，从而在不同流的对象之间创建相互影响的关系。
+    *   **特殊情况：** 设置为“Intangible”（无形的）值的对象不会通过该节点创建关系。
+
+*   **主要参数/功能点：**
+    *   **Affector Relationship（影响关系）：** 开启后可自动创建流之间的相互影响，替代了使用多个Group和Affector DOP节点的复杂操作。
+
+---
+
+### 2. Object Merge SOP (Surface Context)
+**Object Merge SOP** 用于从多个来源（通常是不同的几何体路径）合并几何体。
+
+*   **主要功能：**
+    *   从外部节点或路径导入并合并几何体。
+    *   允许定义这些几何体如何分组以及如何进行变换（Transform）。
+    *   常用于在不同的网络层级之间传输几何体数据。
+
+*   **主要参数：**
+    *   **Number of Objects（对象数量）：** 定义需要合并的对象槽位总数。
+    *   **Enable Merge n（启用合并 n）：** 控制是否启用特定的合并条目。这允许临时禁用某个输入而无需删除路径。
+    *   **Object n（对象 n）：** 指定要合并的几何体路径。可以通过节点选择器选取，也可以手动输入路径。
+
+---
+
+### 3. Volume Merge / Volume Mix (体积合并)
+虽然它们带有“Merge”字样，但专门用于体积（Volume）数据的处理。
+
+*   **主要功能：**
+    *   将一个或多个体积合并到一个指定分辨率的空体积中。
+    *   常用于改变体积的分辨率（通过将旧体积合并到新分辨率的空体积中）。
+*   **Merge/Mix Method（合并/混合模式）参数：**
+    *   **Maximum（最大值）：** 通常用于简单地叠加两个体积。
+    *   **Add（相加）：** 将数值相加（注意：对于0-1的归一化体积，相加可能导致数值超过1）。
+    *   **Difference（差值）：** 用于从一个体积中减去另一个体积的形状（类似布尔运算）。
+
+---
+
+### 4. 其他相关 Merge 节点
+文档中还提到了几种特定工作流下的合并节点：
+
+*   **File Merge SOP：** 在ROP（渲染）工作流中，用于将分块模拟（Cluster Simulation）生成的几何体文件重新加载到场景中。
+    *   **关键参数：** `Merge Range`（合并范围，通常关联到集群数量）、`Merge`（设置为 'CLUSTER'）。
+*   **Merge TOP：** 属于任务算子（TOPs），其行为现在与 Object Merge SOP 类似，支持通过 `Extra Inputs` 参数处理多个输入。
+
+### 总结
+| 节点类型 | 上下文 | 核心用途 | 关键特性 |
+| :--- | :--- | :--- | :--- |
+| **Merge DOP** | DOP (动力学) | 合并对象或数据流 | 可选开启 Affector Relationship 创建交互 |
+| **Object Merge SOP** | SOP (几何体) | 跨路径/节点导入几何体 | 支持多路径输入、独立开关 |
+| **Volume Merge** | SOP (体积) | 组合体积数据 | 支持 Max, Add, Difference 等混合模式 |
+| **File Merge SOP** | SOP (文件) | 加载外部序列/集群文件 | 常用于渲染和分块模拟还原 |
+
+**参考文档**:
+- [Nodes: Merge](local://nodes/dop\merge.txt)
+- [Nodes: Object Merge](local://nodes/sop\object_merge.txt)
+- [News: Pdg](local://news/19\pdg.txt)
+
+---
+
+### 11. resample
+
+**使用次数**: 4 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 12. output
+
+**使用次数**: 3 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 13. polybevel::3.0
+
+**使用次数**: 3 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 14. block_begin
+
+**使用次数**: 3 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 15. convertline
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 16. measure
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 17. groupcreate
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 18. polypath
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 19. groupcopy
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 20. attribdelete
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 21. attribute
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 22. null
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 23. grouprange
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 24. blast
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 25. tube
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 26. copytopoints::2.0
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 27. connectivity
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 28. block_end
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 29. fuse::2.0
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 30. normal
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 31. smooth::2.0
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 32. uvflatten::3.0
+
+**使用次数**: 2 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 33. curve
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 34. copyxform
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 35. uvquickshade
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 36. xform
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 37. attribtransfer
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 38. blendshapes::2.0
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 39. mountain::2.0
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 40. orientalongcurve
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 41. facet
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 42. detangle
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 43. attribpromote
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+### 44. uvlayout::3.0
+
+**使用次数**: 1 个实例
+
+**功能说明**:
+
+（未查询 - 仅对前10个最常用节点类型进行了 RAG 查询）
+
+---
+
+## 📝 完整节点列表
+
+HDA 内部所有节点的完整列表：
+
+| 序号 | 节点名称 | 节点类型 | 路径 | 深度 |
+|------|---------|---------|------|------|
+| 1 | `convertline1` | `convertline` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1` | 0 |
+| 2 | `attribwrangle2` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle2` | 1 |
+| 3 | `measure1` | `measure` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/measure1` | 1 |
+| 4 | `group1` | `groupcreate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/group1` | 1 |
+| 5 | `polypath1` | `polypath` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/polypath1` | 1 |
+| 6 | `switchif2` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/switchif2` | 1 |
+| 7 | `switchif1` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/switchif1` | 1 |
+| 8 | `attribwrangle1` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle1` | 1 |
+| 9 | `attribvop1` | `attribwranglecore` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle1/attribvop1` | 2 |
+| 10 | `switchif3` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/switchif3` | 1 |
+| 11 | `remove_unused_points` | `add` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/remove_unused_points` | 1 |
+| 12 | `create_polylines` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/create_polylines` | 1 |
+| 13 | `keep_points` | `add` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/keep_points` | 1 |
+| 14 | `keep_edge_groups` | `groupcopy` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/keep_edge_groups` | 1 |
+| 15 | `switchif4` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/switchif4` | 1 |
+| 16 | `attribwrangle3` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle3` | 1 |
+| 17 | `attribvop1` | `attribwranglecore` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle3/attribvop1` | 2 |
+| 18 | `interpolate_primitive_attributes_and_groups` | `attribinterpolate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/interpolate_primitive_attributes_and_groups` | 1 |
+| 19 | `attribwrangle4` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribwrangle4` | 1 |
+| 20 | `interpolate_vertex_attributes_and_groups` | `attribinterpolate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/interpolate_vertex_attributes_and_groups` | 1 |
+| 21 | `attribdelete2` | `attribdelete` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribdelete2` | 1 |
+| 22 | `attribute1` | `attribute` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribdelete2/attribute1` | 2 |
+| 23 | `REFERENCE` | `null` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribdelete2/REFERENCE` | 2 |
+| 24 | `output0` | `output` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/attribdelete2/output0` | 2 |
+| 25 | `has_prim_attribs` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/has_prim_attribs` | 1 |
+| 26 | `has_vertex_attribs` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline1/has_vertex_attribs` | 1 |
+| 27 | `curve1` | `curve` | `/obj/hda_extract_temp/GameJam_pipe1/curve1` | 0 |
+| 28 | `polybevel1` | `polybevel::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/polybevel1` | 0 |
+| 29 | `sweep1` | `sweep::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/sweep1` | 0 |
+| 30 | `polybevel2` | `polybevel::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/polybevel2` | 0 |
+| 31 | `grouprange1` | `grouprange` | `/obj/hda_extract_temp/GameJam_pipe1/grouprange1` | 0 |
+| 32 | `blast1` | `blast` | `/obj/hda_extract_temp/GameJam_pipe1/blast1` | 0 |
+| 33 | `polyframe1` | `polyframe` | `/obj/hda_extract_temp/GameJam_pipe1/polyframe1` | 0 |
+| 34 | `tube1` | `tube` | `/obj/hda_extract_temp/GameJam_pipe1/tube1` | 0 |
+| 35 | `copytopoints1` | `copytopoints::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/copytopoints1` | 0 |
+| 36 | `merge1` | `merge` | `/obj/hda_extract_temp/GameJam_pipe1/merge1` | 0 |
+| 37 | `tube2` | `tube` | `/obj/hda_extract_temp/GameJam_pipe1/tube2` | 0 |
+| 38 | `merge2` | `merge` | `/obj/hda_extract_temp/GameJam_pipe1/merge2` | 0 |
+| 39 | `copy1` | `copyxform` | `/obj/hda_extract_temp/GameJam_pipe1/copy1` | 0 |
+| 40 | `uvquickshade1` | `uvquickshade` | `/obj/hda_extract_temp/GameJam_pipe1/uvquickshade1` | 0 |
+| 41 | `sweep2` | `sweep::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/sweep2` | 0 |
+| 42 | `add1` | `add` | `/obj/hda_extract_temp/GameJam_pipe1/add1` | 0 |
+| 43 | `switch1` | `switch` | `/obj/hda_extract_temp/GameJam_pipe1/switch1` | 0 |
+| 44 | `connectivity1` | `connectivity` | `/obj/hda_extract_temp/GameJam_pipe1/connectivity1` | 0 |
+| 45 | `foreach_end1` | `block_end` | `/obj/hda_extract_temp/GameJam_pipe1/foreach_end1` | 0 |
+| 46 | `foreach_begin1` | `block_begin` | `/obj/hda_extract_temp/GameJam_pipe1/foreach_begin1` | 0 |
+| 47 | `output0` | `output` | `/obj/hda_extract_temp/GameJam_pipe1/output0` | 0 |
+| 48 | `attribcreate1` | `attribcreate::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/attribcreate1` | 0 |
+| 49 | `transform1` | `xform` | `/obj/hda_extract_temp/GameJam_pipe1/transform1` | 0 |
+| 50 | `fuse1` | `fuse::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/fuse1` | 0 |
+| 51 | `fuse2` | `fuse::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/fuse2` | 0 |
+| 52 | `convertline2` | `convertline` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2` | 0 |
+| 53 | `attribwrangle2` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle2` | 1 |
+| 54 | `measure1` | `measure` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/measure1` | 1 |
+| 55 | `group1` | `groupcreate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/group1` | 1 |
+| 56 | `polypath1` | `polypath` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/polypath1` | 1 |
+| 57 | `switchif2` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/switchif2` | 1 |
+| 58 | `switchif1` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/switchif1` | 1 |
+| 59 | `attribwrangle1` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle1` | 1 |
+| 60 | `attribvop1` | `attribwranglecore` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle1/attribvop1` | 2 |
+| 61 | `switchif3` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/switchif3` | 1 |
+| 62 | `remove_unused_points` | `add` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/remove_unused_points` | 1 |
+| 63 | `create_polylines` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/create_polylines` | 1 |
+| 64 | `keep_points` | `add` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/keep_points` | 1 |
+| 65 | `keep_edge_groups` | `groupcopy` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/keep_edge_groups` | 1 |
+| 66 | `switchif4` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/switchif4` | 1 |
+| 67 | `attribwrangle3` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle3` | 1 |
+| 68 | `attribvop1` | `attribwranglecore` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle3/attribvop1` | 2 |
+| 69 | `interpolate_primitive_attributes_and_groups` | `attribinterpolate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/interpolate_primitive_attributes_and_groups` | 1 |
+| 70 | `attribwrangle4` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribwrangle4` | 1 |
+| 71 | `interpolate_vertex_attributes_and_groups` | `attribinterpolate` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/interpolate_vertex_attributes_and_groups` | 1 |
+| 72 | `attribdelete2` | `attribdelete` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribdelete2` | 1 |
+| 73 | `attribute1` | `attribute` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribdelete2/attribute1` | 2 |
+| 74 | `REFERENCE` | `null` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribdelete2/REFERENCE` | 2 |
+| 75 | `output0` | `output` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/attribdelete2/output0` | 2 |
+| 76 | `has_prim_attribs` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/has_prim_attribs` | 1 |
+| 77 | `has_vertex_attribs` | `switchif` | `/obj/hda_extract_temp/GameJam_pipe1/convertline2/has_vertex_attribs` | 1 |
+| 78 | `polybevel3` | `polybevel::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/polybevel3` | 0 |
+| 79 | `grouprange2` | `grouprange` | `/obj/hda_extract_temp/GameJam_pipe1/grouprange2` | 0 |
+| 80 | `blast2` | `blast` | `/obj/hda_extract_temp/GameJam_pipe1/blast2` | 0 |
+| 81 | `resample1` | `resample` | `/obj/hda_extract_temp/GameJam_pipe1/resample1` | 0 |
+| 82 | `polyframe2` | `polyframe` | `/obj/hda_extract_temp/GameJam_pipe1/polyframe2` | 0 |
+| 83 | `attribtransfer1` | `attribtransfer` | `/obj/hda_extract_temp/GameJam_pipe1/attribtransfer1` | 0 |
+| 84 | `normal1` | `normal` | `/obj/hda_extract_temp/GameJam_pipe1/normal1` | 0 |
+| 85 | `resample2` | `resample` | `/obj/hda_extract_temp/GameJam_pipe1/resample2` | 0 |
+| 86 | `sweep3` | `sweep::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/sweep3` | 0 |
+| 87 | `copytopoints2` | `copytopoints::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/copytopoints2` | 0 |
+| 88 | `polyframe3` | `polyframe` | `/obj/hda_extract_temp/GameJam_pipe1/polyframe3` | 0 |
+| 89 | `attribcreate2` | `attribcreate::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/attribcreate2` | 0 |
+| 90 | `merge3` | `merge` | `/obj/hda_extract_temp/GameJam_pipe1/merge3` | 0 |
+| 91 | `switch2` | `switch` | `/obj/hda_extract_temp/GameJam_pipe1/switch2` | 0 |
+| 92 | `resample3` | `resample` | `/obj/hda_extract_temp/GameJam_pipe1/resample3` | 0 |
+| 93 | `resample4` | `resample` | `/obj/hda_extract_temp/GameJam_pipe1/resample4` | 0 |
+| 94 | `merge4` | `merge` | `/obj/hda_extract_temp/GameJam_pipe1/merge4` | 0 |
+| 95 | `blendshapes1` | `blendshapes::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/blendshapes1` | 0 |
+| 96 | `connectivity2` | `connectivity` | `/obj/hda_extract_temp/GameJam_pipe1/connectivity2` | 0 |
+| 97 | `foreach_end2` | `block_end` | `/obj/hda_extract_temp/GameJam_pipe1/foreach_end2` | 0 |
+| 98 | `foreach_begin2` | `block_begin` | `/obj/hda_extract_temp/GameJam_pipe1/foreach_begin2` | 0 |
+| 99 | `foreach_begin2_metadata1` | `block_begin` | `/obj/hda_extract_temp/GameJam_pipe1/foreach_begin2_metadata1` | 0 |
+| 100 | `mountain1` | `mountain::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/mountain1` | 0 |
+| 101 | `smooth1` | `smooth::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/smooth1` | 0 |
+| 102 | `orientalongcurve1` | `orientalongcurve` | `/obj/hda_extract_temp/GameJam_pipe1/orientalongcurve1` | 0 |
+| 103 | `facet1` | `facet` | `/obj/hda_extract_temp/GameJam_pipe1/facet1` | 0 |
+| 104 | `sweep4` | `sweep::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/sweep4` | 0 |
+| 105 | `polyframe4` | `polyframe` | `/obj/hda_extract_temp/GameJam_pipe1/polyframe4` | 0 |
+| 106 | `create_rest_position1` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/create_rest_position1` | 0 |
+| 107 | `detangle1` | `detangle` | `/obj/hda_extract_temp/GameJam_pipe1/detangle1` | 0 |
+| 108 | `switch3` | `switch` | `/obj/hda_extract_temp/GameJam_pipe1/switch3` | 0 |
+| 109 | `smooth2` | `smooth::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/smooth2` | 0 |
+| 110 | `attribwrangle1` | `attribwrangle` | `/obj/hda_extract_temp/GameJam_pipe1/attribwrangle1` | 0 |
+| 111 | `attribpromote1` | `attribpromote` | `/obj/hda_extract_temp/GameJam_pipe1/attribpromote1` | 0 |
+| 112 | `uvflatten1` | `uvflatten::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/uvflatten1` | 0 |
+| 113 | `uvflatten2` | `uvflatten::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/uvflatten2` | 0 |
+| 114 | `uvlayout1` | `uvlayout::3.0` | `/obj/hda_extract_temp/GameJam_pipe1/uvlayout1` | 0 |
+| 115 | `normal2` | `normal` | `/obj/hda_extract_temp/GameJam_pipe1/normal2` | 0 |
+| 116 | `attribcreate3` | `attribcreate::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/attribcreate3` | 0 |
+| 117 | `polyframe5` | `polyframe` | `/obj/hda_extract_temp/GameJam_pipe1/polyframe5` | 0 |
+| 118 | `switch4` | `switch` | `/obj/hda_extract_temp/GameJam_pipe1/switch4` | 0 |
+| 119 | `attribcreate4` | `attribcreate::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/attribcreate4` | 0 |
+| 120 | `attribcreate5` | `attribcreate::2.0` | `/obj/hda_extract_temp/GameJam_pipe1/attribcreate5` | 0 |
+| 121 | `switch5` | `switch` | `/obj/hda_extract_temp/GameJam_pipe1/switch5` | 0 |
+
+---
+
+## 📝 生成信息
+
+- **生成工具**: HDA 文档生成器 v2.0
+- **RAG 模型**: gemini-3-flash-preview
+- **Embedding 模型**: text-embedding-3-large
+- **生成时间**: 2026-02-24 22:46:47
+
+---
+
+*本文档由 Houdini MCP + RAG 系统自动生成*

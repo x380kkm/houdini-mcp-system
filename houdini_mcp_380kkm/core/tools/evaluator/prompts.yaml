@@ -1,0 +1,433 @@
+# Houdini 地形生成 Prompt 模板配置
+# 每个阶段都有专门的评估 Prompt
+
+prompts:
+  # 阶段 1: 基础高度场
+  base_heightfield:
+    task_name: "base_heightfield_evaluation"
+    description: "评估基础高度场的初始设置"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估基础高度场（Base Heightfield）的设置质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：基础高度场创建
+      目标：验证高度场的尺寸、分辨率和初始状态是否正确设置
+      重点检查：
+      - 高度场是否正确显示为平面
+      - 网格分辨率是否合理
+      - 尺寸设置是否符合预期
+
+      【当前节点参数参考】
+      节点类型：HeightField (基础高度场)
+      地形尺寸：{terrain_size_x} x {terrain_size_y} 米
+      网格分辨率：{grid_resolution_x} x {grid_resolution_y}
+      网格间距：{grid_spacing} 米
+      初始高度：{initial_height} 米
+
+      【评估标准】
+      1. 显示正确性 (0-10分) - 高度场是否正确显示
+      2. 参数合理性 (0-10分) - 分辨率是否适合地形尺寸
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "base_heightfield_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "display_correctness": 0-10,
+          "parameter_validity": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，50字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|abort",
+        "suggested_next_node": "heightfield_noise",
+        "parameter_adjustments": {{
+          "grid_resolution": "建议值或null",
+          "grid_spacing": "建议值或null"
+        }}
+      }}
+
+  # 阶段 2: 主山脉噪声
+  main_mountain:
+    task_name: "main_mountain_evaluation"
+    description: "评估主山脉的大尺度形态"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估主山脉地形（Main Mountain）的生成质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：主山脉噪声生成
+      目标：创建大尺度的山脉主体结构
+      重点检查：
+      - 是否有明显的山峰和山谷
+      - 高度变化是否足够（不能太扁平）
+      - 山脉分布是否自然
+      - 大尺度特征是否清晰
+
+      这是地形的主体结构，必须有足够的高度和明显的起伏。
+
+      【当前节点参数参考】
+      节点类型：HeightField Noise (主山脉噪声)
+      地形尺寸：{terrain_size_x} x {terrain_size_y} 米
+      网格分辨率：{grid_resolution_x} x {grid_resolution_y}
+      高度 (Amplitude)：{amplitude} 米
+      噪声尺度 (Element Size)：{element_size} 米
+      粗糙度 (Roughness)：{roughness}
+      细节层次 (Octaves)：{octaves} 层
+      频率增益 (Lacunarity)：{lacunarity}
+
+      【评估标准】
+      1. 高度充足性 (0-10分)
+         - 10分：高度差 > 400米，山峰突出
+         - 7-9分：高度差 200-400米，有明显起伏
+         - 4-6分：高度差 100-200米，起伏较小
+         - 0-3分：高度差 < 100米，过于扁平
+      2. 山脉形态 (0-10分) - 山峰和山谷的分布是否自然
+      3. 噪声质量 (0-10分) - 噪声是否过于规则或混乱
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "main_mountain_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "height_adequacy": 0-10,
+          "mountain_shape": 0-10,
+          "noise_quality": 0-10,
+          "estimated_height_range": "估算的高度范围（米）"
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "heightfield_noise_detail",
+        "parameter_adjustments": {{
+          "amplitude": "建议值或null",
+          "element_size": "建议值或null",
+          "roughness": "建议值或null"
+        }}
+      }}
+
+  # 阶段 3: 中等细节层
+  mid_detail:
+    task_name: "mid_detail_evaluation"
+    description: "评估中等尺度细节的叠加效果"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估中等细节层（Mid Detail Layer）的叠加效果，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：中等细节层添加
+      目标：在主山脉基础上添加中等尺度的地形细节
+      重点检查：
+      - 细节是否增强了地形的丰富度
+      - 是否保持了主山脉的大尺度特征
+      - 细节尺度是否合适（不能太大或太小）
+      - 是否出现了次级山脊和小山谷
+
+      注意：这一层应该增强细节，但不能破坏主山脉的整体形态。
+
+      【当前节点参数参考】
+      节点类型：HeightField Noise (中等细节)
+      叠加模式：Add (叠加到主山脉)
+      高度 (Amplitude)：{amplitude} 米
+      噪声尺度 (Element Size)：{element_size} 米
+      粗糙度 (Roughness)：{roughness}
+      细节层次 (Octaves)：{octaves} 层
+      偏移 (Offset)：{offset}
+
+      【评估标准】
+      1. 细节丰富度 (0-10分) - 是否增加了中等尺度的地形变化
+      2. 层次协调性 (0-10分) - 细节是否与主山脉协调
+      3. 尺度适当性 (0-10分) - 细节尺度是否合适
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "mid_detail_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "detail_richness": 0-10,
+          "layer_harmony": 0-10,
+          "scale_appropriateness": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "heightfield_noise_fine",
+        "parameter_adjustments": {{
+          "amplitude": "建议值或null",
+          "element_size": "建议值或null"
+        }}
+      }}
+
+  # 阶段 4: 精细细节层
+  fine_detail:
+    task_name: "fine_detail_evaluation"
+    description: "评估表面级别的精细细节"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估精细细节层（Fine Detail Layer）的表面质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：精细细节层添加
+      目标：添加表面级别的小尺度细节
+      重点检查：
+      - 表面是否有微小的起伏和变化
+      - 是否消除了过于光滑的感觉
+      - 细节是否过于嘈杂
+      - 整体地形层次是否完整（大中小尺度都有）
+
+      注意：这是最后的细节层，应该让地形表面更加真实，但不能过度。
+
+      【当前节点参数参考】
+      节点类型：HeightField Noise (精细细节)
+      叠加模式：Add (叠加到中等细节)
+      高度 (Amplitude)：{amplitude} 米
+      噪声尺度 (Element Size)：{element_size} 米
+      粗糙度 (Roughness)：{roughness}
+      细节层次 (Octaves)：{octaves} 层
+      偏移 (Offset)：{offset}
+
+      【评估标准】
+      1. 表面质感 (0-10分) - 表面是否有适当的微小起伏
+      2. 细节平衡 (0-10分) - 细节是否过度（太嘈杂）
+      3. 整体完整性 (0-10分) - 大中小三个尺度是否都清晰可见
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "fine_detail_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "surface_texture": 0-10,
+          "detail_balance": 0-10,
+          "overall_completeness": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "heightfield_erode",
+        "parameter_adjustments": {{
+          "amplitude": "建议值或null",
+          "element_size": "建议值或null"
+        }}
+      }}
+
+  # 阶段 5: 侵蚀效果
+  erosion:
+    task_name: "erosion_evaluation"
+    description: "评估侵蚀效果的应用质量"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估侵蚀效果（Erosion）的应用质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：侵蚀效果应用
+      目标：通过侵蚀模拟增加地形的真实感
+      重点检查：
+      - 是否出现了自然的侵蚀特征（山谷、河道、风化痕迹）
+      - 山脊是否变得更加锐利
+      - 是否保持了地形的整体结构
+      - 侵蚀是否过度（破坏了地形）
+
+      注意：侵蚀应该增强真实感，但不能破坏地形的基本形态。
+
+      【当前节点参数参考】
+      节点类型：HeightField Erode (侵蚀)
+      侵蚀类型：Hydro (水力侵蚀) + Thermal (热侵蚀)
+      迭代次数：{iterations} 次
+      侵蚀强度：{erosion_rate}
+      沉积强度：{deposition_rate}
+      风化强度：{weathering_rate}
+
+      【评估标准】
+      1. 侵蚀特征 (0-10分) - 是否出现了自然的侵蚀痕迹
+      2. 真实感提升 (0-10分) - 地形是否看起来更加自然
+      3. 结构保持 (0-10分) - 是否保持了原有的山脉结构
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "erosion_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "erosion_features": 0-10,
+          "realism_improvement": 0-10,
+          "structure_preservation": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "heightfield_maskbyfeature",
+        "parameter_adjustments": {{
+          "iterations": "建议值或null",
+          "erosion_rate": "建议值或null"
+        }}
+      }}
+
+  # 阶段 6: 地形遮罩
+  terrain_masks:
+    task_name: "terrain_masks_evaluation"
+    description: "评估地形遮罩的生成质量"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估地形遮罩（Terrain Masks）的生成质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：地形遮罩创建
+      目标：基于高度和坡度创建合理的遮罩层
+      重点检查：
+      - 雪线遮罩是否合理（高海拔区域）
+      - 草地遮罩是否合理（低坡度区域）
+      - 岩石遮罩是否合理（陡峭区域）
+      - 遮罩边界是否自然过渡
+
+      注意：遮罩的质量直接影响后续材质的分配效果。
+
+      【当前节点参数参考】
+      节点类型：HeightField MaskByFeature (遮罩生成)
+      雪线遮罩：
+        - 最低高度：{snow_min_height} 米
+        - 最高高度：{snow_max_height} 米
+      草地遮罩：
+        - 最小坡度：{grass_min_slope} 度
+        - 最大坡度：{grass_max_slope} 度
+      岩石遮罩：
+        - 最小坡度：{rock_min_slope} 度
+
+      【评估标准】
+      1. 遮罩分布 (0-10分) - 各类遮罩的分布是否合理
+      2. 边界质量 (0-10分) - 遮罩边界是否自然过渡
+      3. 覆盖完整性 (0-10分) - 是否覆盖了所有地形区域
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "terrain_masks_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "mask_distribution": 0-10,
+          "boundary_quality": 0-10,
+          "coverage_completeness": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "heightfield_quickshade",
+        "parameter_adjustments": {{
+          "snow_min_height": "建议值或null",
+          "grass_max_slope": "建议值或null"
+        }}
+      }}
+
+  # 阶段 7: 材质着色
+  material_shading:
+    task_name: "material_shading_evaluation"
+    description: "评估材质着色的视觉效果"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估材质着色（Material Shading）的视觉效果，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：材质着色应用
+      目标：为地形应用合适的材质和颜色
+      重点检查：
+      - 材质分配是否合理（雪、草、岩石）
+      - 颜色是否自然
+      - 材质过渡是否平滑
+      - 整体视觉效果是否真实
+
+      注意：这是用户第一次看到带颜色的地形，视觉效果很重要。
+
+      【当前节点参数参考】
+      节点类型：HeightField QuickShade (快速着色)
+      材质层：
+        - 岩石：基础材质，颜色 {rock_color}
+        - 草地：使用 grass_mask，颜色 {grass_color}
+        - 雪：使用 snow_mask，颜色 {snow_color}
+
+      【评估标准】
+      1. 材质分配 (0-10分) - 材质是否分配到正确的区域
+      2. 颜色真实性 (0-10分) - 颜色是否自然
+      3. 过渡平滑度 (0-10分) - 材质之间的过渡是否自然
+      4. 整体视觉效果 (0-10分) - 整体看起来是否真实
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "material_shading_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "material_assignment": 0-10,
+          "color_realism": 0-10,
+          "transition_smoothness": 0-10,
+          "overall_visual_effect": 0-10
+        }},
+        "feedback": "简短的视觉诊断说明（中文，100字以内）",
+        "pipeline_action": "proceed_to_next_node|adjust_parameters|retry_current_node",
+        "suggested_next_node": "convert",
+        "parameter_adjustments": {{
+          "rock_color": "建议值或null",
+          "grass_color": "建议值或null",
+          "snow_color": "建议值或null"
+        }}
+      }}
+
+  # 阶段 8: 最终网格
+  final_mesh:
+    task_name: "final_mesh_evaluation"
+    description: "评估最终地形网格的整体质量"
+    template: |
+      【角色设定】
+      你是一个集成在 Houdini 程序化生成管线中的视觉评估 AI。你的任务是根据输入的 Houdini 视口截图和对应的节点参数，评估最终地形网格（Final Mesh）的整体质量，并返回严格的 JSON 格式结果。
+
+      【任务说明】
+      当前阶段：最终网格评估
+      目标：评估整个地形生成管线的最终输出
+      重点检查：
+      - 地形的整体质量
+      - 所有细节层次是否都清晰可见
+      - 材质效果是否理想
+      - 是否达到了预期的视觉效果
+      - 是否有任何明显的问题或瑕疵
+
+      注意：这是最终评估，需要综合考虑所有方面。
+
+      【当前节点参数参考】
+      节点类型：Convert (转换为多边形)
+      输入：HeightField (带材质的高度场)
+      输出：Polygon Mesh (多边形网格)
+      总节点数：{total_nodes}
+      管线阶段：{pipeline_stages}
+
+      【评估标准】
+      1. 整体质量 (0-10分) - 地形的整体视觉效果
+      2. 细节完整性 (0-10分) - 大中小三个尺度的细节是否都清晰
+      3. 材质效果 (0-10分) - 材质和颜色是否理想
+      4. 真实感 (0-10分) - 整体看起来是否像真实的山脉
+      5. 技术质量 (0-10分) - 网格是否干净（无错误）
+
+      【输出要求】
+      请严格按照以下 JSON 格式输出评估结果，只输出 JSON，不要包含任何其他说明文字：
+      {{
+        "task": "final_mesh_evaluation",
+        "status": "success|warning|error",
+        "quality_score": 0-10,
+        "metrics": {{
+          "overall_quality": 0-10,
+          "detail_completeness": 0-10,
+          "material_effect": 0-10,
+          "realism": 0-10,
+          "technical_quality": 0-10
+        }},
+        "feedback": "详细的最终评估说明（中文，200字以内）",
+        "pipeline_action": "complete|refine_specific_stage|restart_from_stage",
+        "suggested_refinements": [
+          "具体的改进建议1",
+          "具体的改进建议2"
+        ],
+        "production_ready": true,
+        "recommended_next_steps": "后续建议（如添加植被、优化渲染等）"
+      }}

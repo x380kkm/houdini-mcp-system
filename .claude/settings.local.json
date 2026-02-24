@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "WebSearch",
+      "WebFetch(domain:www.sidefx.com)",
+      "Bash(curl:*)",
+      "Bash(head:*)"
+    ]
+  }
+}
