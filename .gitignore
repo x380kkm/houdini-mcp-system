@@ -73,9 +73,16 @@ test_*.py
 # Generated files
 hda_nodes_list.json
 hda_vex_codes.json
+hda_nodes_params.json
 *.log
 nohup.out
 
 # Temporary files
 check_progress.sh
 generate_hda_doc_debug.py
+
+# Non-engineering content (tutorials, blogs, documentation)
+blog/
+blog.md
+TODO.md
+extract_hda_params.py

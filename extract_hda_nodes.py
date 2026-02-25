@@ -14,10 +14,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'houdini_mcp_380kkm/c
 from houdini_mcp.tools import execute_code
 
 if len(sys.argv) < 2:
-    print("用法: python extract_hda_nodes.py <HDA文件路径>")
+    print("用法: python extract_hda_nodes.py <HDA文件路径> [目标深度]")
+    print("  目标深度: 0=只获取顶层, 1=获取第一层子节点, -1=获取所有层（默认）")
     sys.exit(1)
 
 hda_path = sys.argv[1]
+target_depth = int(sys.argv[2]) if len(sys.argv) > 2 else -1  # -1 表示所有层
 HOUDINI_HOST = "localhost"
 HOUDINI_PORT = 18811
 
@@ -25,6 +27,10 @@ print("=" * 80)
 print("HDA 节点列表提取器")
 print("=" * 80)
 print(f"目标 HDA: {hda_path}")
+if target_depth == -1:
+    print(f"提取深度: 所有层")
+else:
+    print(f"提取深度: 第 {target_depth} 层")
 print()
 
 # 步骤 1: 导入并创建节点
@@ -84,43 +90,88 @@ print("步骤 2: 读取子节点列表...")
 extract_code = f"""
 import json
 
-def get_node_list(node, depth=0, max_depth=10):
-    '''递归获取节点信息，包括 VEX 代码'''
+def get_node_list(node, depth=0, max_depth=10, target_depth=-1):
+    '''递归获取节点信息，包括 VEX 代码和参数
+    target_depth: -1=所有层, 0=只顶层, 1=第一层子节点, 等等
+    '''
     if depth > max_depth:
         return []
 
     nodes = []
     try:
         for child in node.children():
-            node_info = {{
-                'path': child.path(),
-                'name': child.name(),
-                'type': child.type().name(),
-                'depth': depth,
-                'vex_code': None
-            }}
+            # 如果指定了目标深度，只收集该深度的节点
+            should_collect = (target_depth == -1) or (depth == target_depth)
 
-            # 检查是否有 VEX 代码（wrangle 节点）
-            if child.type().name() in ['attribwrangle', 'volumewrangle', 'pointwrangle', 'primwrangle']:
+            if should_collect:
+                node_info = {{
+                    'path': child.path(),
+                    'name': child.name(),
+                    'type': child.type().name(),
+                    'depth': depth,
+                    'vex_code': None,
+                    'parameters': {{}}
+                }}
+
+                # 检查是否有 VEX 代码（wrangle 节点）
+                if child.type().name() in ['attribwrangle', 'volumewrangle', 'pointwrangle', 'primwrangle']:
+                    try:
+                        snippet_parm = child.parm('snippet')
+                        if snippet_parm:
+                            vex_code = snippet_parm.eval()
+                            if vex_code and vex_code.strip():
+                                node_info['vex_code'] = vex_code
+                    except:
+                        pass
+
+                # 提取参数（只提取非默认值的参数）
                 try:
-                    snippet_parm = child.parm('snippet')
-                    if snippet_parm:
-                        vex_code = snippet_parm.eval()
-                        if vex_code and vex_code.strip():
-                            node_info['vex_code'] = vex_code
+                    for parm in child.parms():
+                        parm_name = parm.name()
+
+                        # 跳过内部参数
+                        if parm_name.startswith('__'):
+                            continue
+
+                        try:
+                            parm_template = parm.parmTemplate()
+                            parm_type = parm_template.type()
+
+                            # 跳过 Ramp 和其他复杂类型
+                            if parm_type in [hou.parmTemplateType.Ramp]:
+                                continue
+
+                            value = parm.eval()
+
+                            # 转换为 JSON 可序列化的类型
+                            if hasattr(value, '__iter__') and not isinstance(value, str):
+                                value = list(value)
+
+                            # 获取默认值
+                            default_value = parm_template.defaultValue()
+                            if isinstance(default_value, (list, tuple)) and default_value:
+                                default_value = default_value[0]
+
+                            # 只保存非默认值或重要参数
+                            if value != default_value or parm_name in ['snippet', 'group', 'class', 'switcher']:
+                                node_info['parameters'][parm_name] = value
+                        except:
+                            pass
                 except:
                     pass
 
-            nodes.append(node_info)
-            # 递归子节点
-            nodes.extend(get_node_list(child, depth + 1, max_depth))
+                nodes.append(node_info)
+
+            # 继续递归（即使不收集当前层，也要继续深入）
+            if target_depth == -1 or depth < target_depth:
+                nodes.extend(get_node_list(child, depth + 1, max_depth, target_depth))
     except:
         pass
 
     return nodes
 
 hda_node = hou.node(r"{node_path}")
-all_nodes = get_node_list(hda_node)
+all_nodes = get_node_list(hda_node, target_depth={target_depth})
 
 print("找到", len(all_nodes), "个子节点")
 
@@ -190,14 +241,18 @@ print(f"总节点数: {len(nodes_data)}")
 
 type_counts = {}
 vex_nodes_count = 0
+nodes_with_params = 0
 for node in nodes_data:
     t = node['type']
     type_counts[t] = type_counts.get(t, 0) + 1
     if node.get('vex_code'):
         vex_nodes_count += 1
+    if node.get('parameters'):
+        nodes_with_params += 1
 
 print(f"节点类型数: {len(type_counts)}")
 print(f"包含 VEX 代码的节点数: {vex_nodes_count}")
+print(f"有非默认参数的节点数: {nodes_with_params}")
 print()
 print("前 10 个最常用的节点类型:")
 for node_type, count in sorted(type_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
