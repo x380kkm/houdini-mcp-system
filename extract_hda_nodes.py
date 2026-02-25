@@ -85,19 +85,33 @@ extract_code = f"""
 import json
 
 def get_node_list(node, depth=0, max_depth=10):
-    '''轻量级递归：只获取路径、名称、类型'''
+    '''递归获取节点信息，包括 VEX 代码'''
     if depth > max_depth:
         return []
 
     nodes = []
     try:
         for child in node.children():
-            nodes.append({{
+            node_info = {{
                 'path': child.path(),
                 'name': child.name(),
                 'type': child.type().name(),
-                'depth': depth
-            }})
+                'depth': depth,
+                'vex_code': None
+            }}
+
+            # 检查是否有 VEX 代码（wrangle 节点）
+            if child.type().name() in ['attribwrangle', 'volumewrangle', 'pointwrangle', 'primwrangle']:
+                try:
+                    snippet_parm = child.parm('snippet')
+                    if snippet_parm:
+                        vex_code = snippet_parm.eval()
+                        if vex_code and vex_code.strip():
+                            node_info['vex_code'] = vex_code
+                except:
+                    pass
+
+            nodes.append(node_info)
             # 递归子节点
             nodes.extend(get_node_list(child, depth + 1, max_depth))
     except:
@@ -175,15 +189,27 @@ print("=" * 80)
 print(f"总节点数: {len(nodes_data)}")
 
 type_counts = {}
+vex_nodes_count = 0
 for node in nodes_data:
     t = node['type']
     type_counts[t] = type_counts.get(t, 0) + 1
+    if node.get('vex_code'):
+        vex_nodes_count += 1
 
 print(f"节点类型数: {len(type_counts)}")
+print(f"包含 VEX 代码的节点数: {vex_nodes_count}")
 print()
 print("前 10 个最常用的节点类型:")
 for node_type, count in sorted(type_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
     print(f"  {node_type}: {count} 个")
+
+# 单独保存 VEX 代码
+vex_nodes = [node for node in nodes_data if node.get('vex_code')]
+if vex_nodes:
+    vex_output_file = Path("hda_vex_codes.json")
+    with open(vex_output_file, 'w', encoding='utf-8') as f:
+        json.dump(vex_nodes, f, indent=2, ensure_ascii=False)
+    print(f"\n✓ VEX 代码已单独保存到: {vex_output_file}")
 
 print()
 print("✓ 完成！")

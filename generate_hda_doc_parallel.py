@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-HDA 文档生成器
-基于节点列表 JSON，对所有节点类型进行 RAG 查询并生成文档
+HDA 文档生成器 - 并行版本
+使用多线程加速 RAG 查询
 """
 
 import sys
@@ -11,21 +11,26 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'houdini_rag'))
 
 from rag_engine import HoudiniRAG
 
+print("=" * 80)
+print("HDA 文档生成器 (并行版本)")
+print("=" * 80)
+
 if len(sys.argv) < 2:
-    print("用法: python generate_hda_doc.py <节点列表JSON文件>")
+    print("用法: python generate_hda_doc_parallel.py <节点列表JSON文件> [并发数]")
     sys.exit(1)
 
 json_file = sys.argv[1]
+max_workers = int(sys.argv[2]) if len(sys.argv) > 2 else 5  # 默认5个并发
 
-print("=" * 80)
-print("HDA 文档生成器")
-print("=" * 80)
 print(f"输入文件: {json_file}")
+print(f"并发数: {max_workers}")
 print()
 
 # 读取节点列表
@@ -60,55 +65,37 @@ rag = HoudiniRAG(config)
 print("✓ RAG 系统初始化成功")
 print()
 
-# 对每种节点类型进行 RAG 查询（查询所有节点类型）
-print("=" * 80)
-print("开始 RAG 查询（所有节点类型）")
-print("=" * 80)
-print()
+# 线程安全的计数器和锁
+progress_lock = Lock()
+completed_count = [0]  # 使用列表以便在函数内修改
 
-node_type_docs = {}
-
-# 查询所有节点类型
-all_node_types = sorted(node_types.items(), key=lambda x: len(x[1]), reverse=True)
-
-for i, (node_type, instances) in enumerate(all_node_types, 1):
-    print(f"[{i}/{len(all_node_types)}] 查询节点类型: {node_type} ({len(instances)} 个实例)")
-
-    # 构建查询
-    query = f"What is the {node_type} node in Houdini? What does it do and what are its main parameters?"
-
+def query_node_type(node_type, instances):
+    """查询单个节点类型"""
     try:
+        query = f"What is the {node_type} node in Houdini? Please explain its purpose, main parameters, and common use cases."
         response = rag.query(query)
-        node_type_docs[node_type] = {
+
+        result = {
             'answer': response['answer'],
-            'sources': response['sources'][:3],  # 只保留前3个来源
+            'sources': response['sources'][:3],
             'instance_count': len(instances)
         }
-        print(f"  ✓ 查询成功")
+
+        with progress_lock:
+            completed_count[0] += 1
+            print(f"[{completed_count[0]}/{len(node_types)}] ✓ {node_type} ({len(instances)} 个实例)")
+
+        return node_type, result, None
     except Exception as e:
-        print(f"  ✗ 查询失败: {e}")
-        node_type_docs[node_type] = {
-            'answer': f"查询失败: {e}",
-            'sources': [],
-            'instance_count': len(instances)
-        }
+        with progress_lock:
+            completed_count[0] += 1
+            print(f"[{completed_count[0]}/{len(node_types)}] ✗ {node_type}: {e}")
 
-    print()
+        return node_type, None, str(e)
 
-# 查询 VEX 代码说明
-print("=" * 80)
-print("开始 VEX 代码查询")
-print("=" * 80)
-print()
-
-vex_docs = {}
-vex_nodes = [node for node in nodes_data if node.get('vex_code')]
-
-if vex_nodes:
-    for i, node in enumerate(vex_nodes, 1):
-        print(f"[{i}/{len(vex_nodes)}] 查询 VEX 代码: {node['name']} ({node['type']})")
-
-        # 构建提示 - 直接调用 LLM，不使用 RAG 检索
+def query_vex_code(node):
+    """查询单个 VEX 代码"""
+    try:
         prompt = f"""Explain this VEX code in Houdini:
 
 ```vex
@@ -121,34 +108,97 @@ Please explain:
 3. What attributes or parameters does it work with?
 """
 
-        try:
-            # 直接调用 LLM，不通过 RAG 检索
-            answer = rag.llm.invoke(prompt).content
-            vex_docs[node['path']] = {
-                'node_name': node['name'],
-                'node_type': node['type'],
-                'node_path': node['path'],
-                'vex_code': node['vex_code'],
-                'explanation': answer,
-                'sources': []  # VEX 代码直接解释，无需参考文档
+        answer = rag.llm.invoke(prompt).content
+
+        result = {
+            'node_name': node['name'],
+            'node_type': node['type'],
+            'node_path': node['path'],
+            'vex_code': node['vex_code'],
+            'explanation': answer,
+            'sources': []
+        }
+
+        with progress_lock:
+            completed_count[0] += 1
+            print(f"[{completed_count[0]}/{len(vex_nodes)}] ✓ VEX: {node['name']} ({node['type']})")
+
+        return node['path'], result, None
+    except Exception as e:
+        with progress_lock:
+            completed_count[0] += 1
+            print(f"[{completed_count[0]}/{len(vex_nodes)}] ✗ VEX: {node['name']}: {e}")
+
+        return node['path'], None, str(e)
+
+# 并行查询节点类型
+print("=" * 80)
+print(f"开始并行查询节点类型 (并发数: {max_workers})")
+print("=" * 80)
+print()
+
+node_type_docs = {}
+completed_count[0] = 0
+
+with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    futures = {
+        executor.submit(query_node_type, node_type, instances): node_type
+        for node_type, instances in node_types.items()
+    }
+
+    for future in as_completed(futures):
+        node_type, result, error = future.result()
+        if result:
+            node_type_docs[node_type] = result
+        else:
+            node_type_docs[node_type] = {
+                'answer': f"查询失败: {error}",
+                'sources': [],
+                'instance_count': len(node_types[node_type])
             }
-            print(f"  ✓ 查询成功")
-        except Exception as e:
-            print(f"  ✗ 查询失败: {e}")
-            vex_docs[node['path']] = {
-                'node_name': node['name'],
-                'node_type': node['type'],
-                'node_path': node['path'],
-                'vex_code': node['vex_code'],
-                'explanation': f"查询失败: {e}",
-                'sources': []
-            }
 
-        print()
+print()
+print(f"✓ 节点类型查询完成 ({len(node_type_docs)}/{len(node_types)})")
+print()
 
-# 对于其他节点类型，不再添加占位符（已查询所有）
+# 并行查询 VEX 代码
+print("=" * 80)
+print(f"开始并行查询 VEX 代码 (并发数: {max_workers})")
+print("=" * 80)
+print()
 
-# 生成 Markdown 文档
+vex_nodes = [node for node in nodes_data if node.get('vex_code')]
+vex_docs = {}
+completed_count[0] = 0
+
+if vex_nodes:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(query_vex_code, node): node['path']
+            for node in vex_nodes
+        }
+
+        for future in as_completed(futures):
+            node_path, result, error = future.result()
+            if result:
+                vex_docs[node_path] = result
+            else:
+                # 找到对应的节点
+                node = next(n for n in vex_nodes if n['path'] == node_path)
+                vex_docs[node_path] = {
+                    'node_name': node['name'],
+                    'node_type': node['type'],
+                    'node_path': node['path'],
+                    'vex_code': node['vex_code'],
+                    'explanation': f"查询失败: {error}",
+                    'sources': []
+                }
+
+print()
+print(f"✓ VEX 代码查询完成 ({len(vex_docs)}/{len(vex_nodes)})")
+print()
+
+# 生成文档（与原版本相同的逻辑）
 print("=" * 80)
 print("生成 Markdown 文档")
 print("=" * 80)
@@ -274,12 +324,13 @@ with open(doc_file, 'w', encoding='utf-8') as f:
 
     # 生成信息
     f.write("## 📝 生成信息\n\n")
-    f.write("- **生成工具**: HDA 文档生成器 v3.0\n")
-    f.write("- **RAG 模型**: gemini-3-flash-preview\n")
+    f.write("- **生成工具**: HDA 文档生成器 v3.0 (并行版本)\n")
+    f.write("- **RAG 模型**: gemini-3-pro-preview\n")
     f.write("- **Embedding 模型**: text-embedding-3-large\n")
     f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     f.write(f"- **查询的节点类型数**: {len(node_type_docs)}\n")
-    f.write(f"- **查询的 VEX 节点数**: {len(vex_docs)}\n\n")
+    f.write(f"- **查询的 VEX 节点数**: {len(vex_docs)}\n")
+    f.write(f"- **并发数**: {max_workers}\n\n")
     f.write("---\n\n")
     f.write("*本文档由 Houdini MCP + RAG 系统自动生成*\n")
     f.write("\n**注意**: VEX 代码说明和节点类型说明已分别保存到独立文件中，便于单独查阅。\n")
@@ -320,9 +371,10 @@ if vex_docs:
             f.write("---\n\n")
 
         f.write("## 生成信息\n\n")
-        f.write("- **生成工具**: HDA 文档生成器 v3.0\n")
-        f.write("- **RAG 模型**: gemini-3-flash-preview\n")
-        f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        f.write("- **生成工具**: HDA 文档生成器 v3.0 (并行版本)\n")
+        f.write("- **RAG 模型**: gemini-3-pro-preview\n")
+        f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"- **并发数**: {max_workers}\n\n")
         f.write("*本文档由 Houdini MCP + RAG 系统自动生成*\n")
 
     print(f"✓ VEX 代码文档已生成: {vex_doc_file}")
@@ -361,9 +413,10 @@ with open(node_types_doc_file, 'w', encoding='utf-8') as f:
         f.write("---\n\n")
 
     f.write("## 生成信息\n\n")
-    f.write("- **生成工具**: HDA 文档生成器 v3.0\n")
-    f.write("- **RAG 模型**: gemini-3-flash-preview\n")
-    f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    f.write("- **生成工具**: HDA 文档生成器 v3.0 (并行版本)\n")
+    f.write("- **RAG 模型**: gemini-3-pro-preview\n")
+    f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    f.write(f"- **并发数**: {max_workers}\n\n")
     f.write("*本文档由 Houdini MCP + RAG 系统自动生成*\n")
 
 print(f"✓ 节点类型文档已生成: {node_types_doc_file}")
@@ -373,7 +426,7 @@ json_doc_file = output_dir / "node_types_documentation.json"
 with open(json_doc_file, 'w', encoding='utf-8') as f:
     json.dump(node_type_docs, f, indent=2, ensure_ascii=False)
 
-print(f"✓ JSON 文档已保存: {json_doc_file}")
+print(f"✓ 节点类型 JSON 已保存: {json_doc_file}")
 
 print()
 print("=" * 80)

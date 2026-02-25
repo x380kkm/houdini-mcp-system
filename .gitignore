@@ -69,3 +69,13 @@ Thumbs.db
 hda_docs/
 test_*.py
 *_test.py
+
+# Generated files
+hda_nodes_list.json
+hda_vex_codes.json
+*.log
+nohup.out
+
+# Temporary files
+check_progress.sh
+generate_hda_doc_debug.py
